@@ -9,11 +9,11 @@ os.path.isfile(): Check if a path points to an existing regular file
 os.path.getsize(): Get the size of a file (in bytes)
 .join(): Join a list of strings together with a given separator
 """
-import os 
+import os
 from google.genai import types
 
 
-schema_get_files_info = types.FunctionDeclaration(
+schema_get_file_info = types.FunctionDeclaration(
     name="get_files_info",
     description="Lists files in a specified directory relative to the working directory, providing file size and directory status",
     parameters=types.Schema(
@@ -26,10 +26,10 @@ schema_get_files_info = types.FunctionDeclaration(
         },
     ),
 )
-def get_files_info(working_directory, directory="."):
+def get_file_info(working_directory, directory="."):
     working_dir_abs = os.path.abspath(working_directory)
     target_dir = os.path.normpath(os.path.join(working_dir_abs, directory))
-    
+
     if os.path.commonpath([working_dir_abs, target_dir]) == working_dir_abs:
         if not os.path.isdir(target_dir):
             return f'Error: "{target_dir}" is not a directory'
