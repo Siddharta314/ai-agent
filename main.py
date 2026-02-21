@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from call_function import call_function
 from functions.get_file_info import schema_get_file_info
 from functions.get_file_content import schema_get_file_content
 from functions.write_file import schema_write_file
@@ -62,7 +63,8 @@ def main():
     print(f"{response.text}")
     if response.function_calls:
         for call in response.function_calls:
-            print(f"Calling function: {call.name}({call.args})")
+            function_call_result = call_function(call, verbose=args.verbose)
+            print(function_call_result.parts[0].function_response.response)
 
 
 

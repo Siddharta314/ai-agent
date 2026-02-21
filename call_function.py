@@ -1,10 +1,14 @@
-from functions import get_file_info, run_python_file, write_file, get_file_content
+from functions.get_file_content import get_file_content
+from functions.get_file_info import get_file_info
+from functions.run_python_file import run_python_file
+from functions.write_file import write_file
+
 from google.genai import types
 
 def call_function(function_call, verbose=False):
     function_map = {
         "get_file_content": get_file_content,
-        "Write_file": write_file,
+        "write_file": write_file,
         "run_python_file": run_python_file,
         "get_file_info": get_file_info
     }
@@ -17,6 +21,7 @@ def call_function(function_call, verbose=False):
 
     try:
         function_to_call = function_map.get(function_name)
+
         if not function_to_call or not callable(function_to_call):
             return types.Content(
                 role="tool",
@@ -27,7 +32,9 @@ def call_function(function_call, verbose=False):
                     )
                 ],
             )
-        result = function_to_call(**function_call.args)
+        args = dict(function_call.args) if function_call.args else {}
+        args["working_directory"] = "./calculator"
+        result = function_to_call(**args)
         return types.Content(
             role="tool",
             parts=[
