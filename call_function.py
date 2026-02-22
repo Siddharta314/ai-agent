@@ -5,6 +5,7 @@ from functions.write_file import write_file
 
 from google.genai import types
 
+
 def call_function(function_call, verbose=False):
     function_map = {
         "get_file_content": get_file_content,

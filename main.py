@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -23,6 +24,7 @@ When a user asks a question or makes a request, make a function call plan. You c
 All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
 """
 
+MAX_ITERATIONS = 20
 
 available_functions = types.Tool(
     function_declarations=[
@@ -48,25 +50,45 @@ def main():
         temperature=0,
         tools=[available_functions]
     )
-    response = client.models.generate_content(
-        model = "gemini-2.5-flash",
-        contents=messages,
-        config=config
-    )
+    for _ in range(MAX_ITERATIONS):
+        response = client.models.generate_content(
+            model = "gemini-2.5-flash",
+            contents=messages,
+            config=config
+        )
 
-    if response is None or response.usage_metadata is None:
-        return
-    if (args.verbose):
-        print(f"User prompt: \n{args.user_prompt}")
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-    print(f"{response.text}")
-    if response.function_calls:
+        if getattr(response, "candidates", None):
+            for candidate in response.candidates:
+                if getattr(candidate, "content", None):
+                    messages.append(candidate.content)
+
+        if not response.function_calls:
+            print(f"{response.text}")
+            return
+
+        function_responses = []
         for call in response.function_calls:
             function_call_result = call_function(call, verbose=args.verbose)
-            print(function_call_result.parts[0].function_response.response)
+            if hasattr(function_call_result, "parts"):
+                function_responses.extend(function_call_result.parts)
+            else:
+                function_responses.append(function_call_result)
 
+        if response is None or response.usage_metadata is None:
+            return
+        if function_responses:
+            messages.append(types.Content(role="user", parts=function_responses))
+        if (args.verbose):
+            print(f"User prompt: \n{args.user_prompt}")
+            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+        # Print latest assistant text (may be intermediate)
+        print(f"{response.text}")
 
+    # If we exit the loop without returning, we've hit the max iterations.
+    print("""Error: reached maximum iterations without a final model response.
+        The model still requested function calls.""")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
