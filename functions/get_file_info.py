@@ -13,8 +13,8 @@ import os
 from google.genai import types
 
 
-schema_get_file_info = types.FunctionDeclaration(
-    name="get_file_info",
+schema_get_files_info = types.FunctionDeclaration(
+    name="get_files_info",
     description="Lists files in a specified directory relative to the working directory, providing file size and directory status",
     parameters=types.Schema(
         type=types.Type.OBJECT,
@@ -26,7 +26,7 @@ schema_get_file_info = types.FunctionDeclaration(
         },
     ),
 )
-def get_file_info(working_directory, directory="."):
+def get_files_info(working_directory, directory="."):
     working_dir_abs = os.path.abspath(working_directory)
     target_dir = os.path.normpath(os.path.join(working_dir_abs, directory))
 

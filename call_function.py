@@ -1,5 +1,5 @@
 from functions.get_file_content import get_file_content
-from functions.get_file_info import get_file_info
+from functions.get_file_info import get_files_info
 from functions.run_python_file import run_python_file
 from functions.write_file import write_file
 
@@ -11,7 +11,7 @@ def call_function(function_call, verbose=False):
         "get_file_content": get_file_content,
         "write_file": write_file,
         "run_python_file": run_python_file,
-        "get_file_info": get_file_info
+        "get_files_info": get_files_info
     }
 
     if verbose:
